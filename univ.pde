@@ -2,17 +2,19 @@
 //1 - jezik 0*
 //2 - rijeci oblika 0^n1^n
 //3 - parni palindromi
-int primjer=3;
+int primjer=2;
 
 //odabir ulazne rijeci
-String w = "1001";
+String w = "01";
+
+
 
 //kod TS koji odlucuje jezik 0*
-String inp1 = "0|1|10|||0|1|||0|1| ||| |||10|0|10|0|1||10| |1| |1||10|1|0|1|1|||0|||1|||10";
+String inp1 = "0|1|10|||0|1|||0|1|_|||_|||10|0|10|0|1||10|_|1|_|1||10|1|0|1|1|||0|||1|||10";
 //jezik 0^n1^n
-String inp2 = "0|1|10|11|100|101|||0|1|||0|1| ||| |||10|0|11| |1||10| |1| |1||11|0|11|0|1||11|1|11|1|1||11| |100| |0||100|1|101| |0||101|0|101|0|0||101|1|101|1|0||101| |10| |1|||0|||1|||10";
+String inp2 = "0|1|10|11|100|101|||0|1|||0|1|_|||_|||10|0|11|_|1||10|_|1|_|1||11|0|11|0|1||11|1|11|1|1||11|_|100|_|0||100|1|101|_|0||101|0|101|0|0||101|1|101|1|0||101|_|10|_|1|||0|||1|||10";
 //jezik parnih palindroma
-String inp3 = "0|1|10|11|100|101|110|111|||0|1|||0|1| ||| |||10|0|11| |1||10|1|110| |1||10| |1| |1||11|0|11|0|1||11|1|11|1|1||11| |100| |0||100|0|101| |0||110|0|110|0|1||110|1|110|1|1||110| |111| |0||111|1|101| |0||101|0|101|0|0||101|1|101|1|0||101| |10| |1|||0|||1|||10";
+String inp3 = "0|1|10|11|100|101|110|111|||0|1|||0|1|_|||_|||10|0|11|_|1||10|1|110|_|1||10|_|1|_|1||11|0|11|0|1||11|1|11|1|1||11|_|100|_|0||100|0|101|_|0||110|0|110|0|1||110|1|110|1|1||110|_|111|_|0||111|1|101|_|0||101|0|101|0|0||101|1|101|1|0||101|_|10|_|1|||0|||1|||10";
 
 //pomocne varijable
 
@@ -36,10 +38,11 @@ void setup() {
     case 2: inp=inp2; break;
     default: inp=inp3;
   }
+  
   inp += "||||" + w;
   input = inp.split("");
   
-  //inicijalizacija traka
+  //inicijalizacija traka i stroja
   inputTape=new tape(30,input);
   first=new tape(150,empty);
   second=new tape(270,empty);
@@ -98,12 +101,13 @@ void keyPressed(){
   }
 }
 
-//program koji prati pseudokod u seminaru
+//program koji prati rad univerzalnog TS
 //varijabla korak sluzi kako bi se promjene
 //traka u kodu postupno crtale na ekran,
 //umjesto sve odjednom/prebrzo
 void kod(){
-    //provjera je li u zavrsnom stanju
+  
+    //provjera je li stroj u zavrsnom stanju te ispis na ekran/u konzolu
     if(stroj.state=="t"){
       println("Prihvaćam riječ!");      
       textSize(20);      
@@ -124,12 +128,21 @@ void kod(){
       lastPressed=false;
     }
     
+  //inicijalizacija traka
+   
+  //* oznacava lijevi rub na prvoj+drugoj pomocnoj traci
   if(korak==1){
     stroj.write("*",1,first);
     stroj.write("*",1,second);
   }
+  //citanje koda na ulaznoj traci
+  //broje se separatori kako bi se znalo kad smo dosli do koda prijelaza
   if(korak==2){
     String r = stroj.read(1,inputTape);
+    if(r.equals(" ")){
+      stroj.state="f";
+      return;
+    }
     if(r.equals("|")){
       sep++;
       
@@ -145,7 +158,7 @@ void kod(){
     else if (t==4){
       
     }
-    else{
+    else{ //desni rub prve trake oznaci s *
       stroj.write(" ",-1,first);
       stroj.write(" ",-1,first);
       stroj.write("*",-1,first);
@@ -153,29 +166,39 @@ void kod(){
       return;
     }
   }
+  //zapisivanje prijelaza na prvu traku
   if(korak==3){
     String r = stroj.read(1,inputTape);
+    if(r.equals(" ")){
+      stroj.state="f";
+      return;
+    }
+    
     if(r.equals("|")){
       sep++;
       
-      if(sep==2) r="#";
+      if(sep==2) r="#"; //umjesto dvostrukog separatora || pise |#
       
       if(sep>=3) t++;
-      }
-      else{
-        sep=0;
-      }
+    }
+    else{
+      sep=0;
+    }
       
-      if(t>4){
-        korak=2;
-        return;
-      }
-      
-      stroj.write(r,1,first);
+    if(t>4){ //prepisani svi prijelazi
+      korak=2;
       return;
+    }
+    
+    if(r.equals("_")) r=" ";
+      
+    stroj.write(r,1,first);
+    return;
   }
+  //daljnje citanje koda s ulaza
   if(korak==4){
     String r = stroj.read(1,inputTape);
+    
     if(r.equals("|")){
       sep++;
       
@@ -186,13 +209,15 @@ void kod(){
     }
     
     if(t<7){
+      if(r.equals(" ")) stroj.state="f";
       return;
     }
-    else if(t==7){
+    else if(t==7){ //zapis pocetnog stanja na drugu traku
       if(!r.equals("|")) stroj.write(r,1,second);
+      if(r.equals(" ")) stroj.state="f";
       return;
     }
-    else{
+    else{ //zapis ulazne rijeci w na trecu traku
       if(!r.equals("|")) stroj.write(r,1,third);
       if(r.equals(" ")){
         stroj.write("*",1,second);
@@ -200,11 +225,14 @@ void kod(){
       else return;
     }
   }
+  //vracanje glava na pocetak traka
   if(korak==5){
     stroj.returnAllToStart();
     stroj.move(1,first);
     stroj.move(1,second);
   }
+  
+  //inicijalizacija je obavljena, daljnji kod prati dijagram TS iz seminara
   
   if(korak==6){ //stanje CH
     String r = stroj.read(1,second);
