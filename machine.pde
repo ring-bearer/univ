@@ -61,7 +61,6 @@ class machine{
     for(int i=0;i<tapes.length;i++){
       tapes[i].returnToStart();
     }
-    state="0";
     return;
   }
   

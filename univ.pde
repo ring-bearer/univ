@@ -1,11 +1,15 @@
+//upute za upravljanje strojem su u README.md
+
 //odabir primjera:
 //1 - jezik 0*
 //2 - rijeci oblika 0^n1^n
 //3 - parni palindromi
-int primjer=2;
+int primjer=3;
 
 //odabir ulazne rijeci
-String w = "01";
+String w = "0110";
+
+
 
 
 
